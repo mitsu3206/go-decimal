@@ -20,3 +20,4 @@ Go言語で小数を扱う場合における、いくつかの方法を検証し
 - 言語: Go (1.25.x)
 - データベース: MySQL
 - コンテナ: Docker, Docker Compose
+- ORM: Gorm
