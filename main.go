@@ -14,6 +14,7 @@ import (
 type CalculationResult struct {
 	gorm.Model
 	FloatValue float64
+	IntValue   int
 }
 
 var DB *gorm.DB
@@ -42,6 +43,8 @@ func main() {
 		panic("failed to migrate database")
 	}
 	calcFloat()
+	calcInt()
+	calcIntWithError()
 }
 
 func calcFloat() {
@@ -51,4 +54,29 @@ func calcFloat() {
 	}
 	fmt.Println(f)
 	DB.Create(&CalculationResult{FloatValue: f})
+}
+
+func calcInt() {
+	var i int
+	k := int(0.1 * 10000)
+	for j := 0; j < 10; j++ {
+		i += k
+	}
+	fmt.Println(i)
+	calcResult := CalculationResult{IntValue: i}
+	DB.Create(&calcResult)
+	fmt.Println(float64(calcResult.IntValue) / 10000.0)
+}
+
+func calcIntWithError() {
+	fmt.Println("--Error case with 1.0/49.0 --")
+	var i int
+	val := (1.0 / 49.0) * 100000000.0
+	k := int(val)
+	for j := 0; j < 49; j++ {
+		i += k
+	}
+	fmt.Printf("i = %d\n", i)
+	result := float64(i) / 100000000.0
+	fmt.Printf("Expected: 1.0, Actual: %.20f\n", result)
 }
