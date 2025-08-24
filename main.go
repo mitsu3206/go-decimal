@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/shopspring/decimal"
 	gmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -47,6 +48,7 @@ func main() {
 	calcInt()
 	calcIntWithError()
 	calcBigRat()
+	calcDecimal()
 }
 
 func calcFloat() {
@@ -112,6 +114,44 @@ func calcBigRat() {
 	fmt.Printf("Result as a fraction: %s\n", sum.String())
 	f64, _ := sum.Float64()
 	fmt.Printf("Result as float64: %.20f\n", f64)
+	calcResult := CalculationResult{FloatValue: f64}
+	DB.Create(&calcResult)
+}
+
+func calcDecimal() {
+	fmt.Println("\n--- decimal.Decimal case with 1/49 ---")
+	// 1と49をdecimalで表現
+	one := decimal.NewFromInt(1)
+	fortyNine := decimal.NewFromInt(49)
+
+	// 1/49を計算。decimalでは除算の際に精度を指定する必要がある
+	// ここでは50桁の精度で計算し、標準的な丸め(四捨五入)を行う
+	r := one.DivRound(fortyNine, 50)
+
+	// 合計を保持するdecimalを作成
+	sum := decimal.NewFromInt(0)
+
+	// 49回足し合わせる
+	for i := 0; i < 49; i++ {
+		sum = sum.Add(r)
+	}
+
+	// 期待値である1
+	expectedOne := decimal.NewFromInt(1)
+
+	// 結果を比較
+	if sum.Equal(expectedOne) {
+		fmt.Println("Correct! The result is exactly 1.")
+	} else {
+		fmt.Println("Error! The result is not exactly 1 due to rounding.")
+		// 期待値との差分を表示
+		diff := sum.Sub(expectedOne).Abs()
+		fmt.Printf("Final Sum:  %s\n", sum.String())
+		fmt.Printf("Difference: %s\n", diff.String())
+	}
+
+	// DBに保存するためにfloat64に変換
+	f64, _ := sum.Float64()
 	calcResult := CalculationResult{FloatValue: f64}
 	DB.Create(&calcResult)
 }
