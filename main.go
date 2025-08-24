@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"time"
 
@@ -45,6 +46,7 @@ func main() {
 	calcFloat()
 	calcInt()
 	calcIntWithError()
+	calcBigRat()
 }
 
 func calcFloat() {
@@ -81,4 +83,33 @@ func calcIntWithError() {
 	fmt.Printf("i = %d\n", i)
 	result := float64(i) / 100000000.0
 	fmt.Printf("Expected: 1.0, Actual: %.20f\n", result)
+}
+
+func calcBigRat() {
+	fmt.Println("--- big.Rat case with 1/49 ---")
+	// 1/49を表現するRatを作成
+	r := big.NewRat(1, 49)
+
+	// 合計を保持するRatを作成
+	sum := big.NewRat(0, 1)
+
+	// 49回足し合わせる
+	for i := 0; i < 49; i++ {
+		sum.Add(sum, r)
+	}
+
+	// 期待値である1 (1/1)
+	one := big.NewRat(1, 1)
+
+	// 結果を比較
+	if sum.Cmp(one) == 0 {
+		fmt.Println("Correct! The result is exactly 1.")
+	} else {
+		fmt.Printf("Error! The result is not 1. It is %s\n", sum.String())
+	}
+
+	// 結果を文字列や浮動小数点数で表示
+	fmt.Printf("Result as a fraction: %s\n", sum.String())
+	f64, _ := sum.Float64()
+	fmt.Printf("Result as float64: %.20f\n", f64)
 }
