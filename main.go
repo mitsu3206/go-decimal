@@ -112,4 +112,6 @@ func calcBigRat() {
 	fmt.Printf("Result as a fraction: %s\n", sum.String())
 	f64, _ := sum.Float64()
 	fmt.Printf("Result as float64: %.20f\n", f64)
+	calcResult := CalculationResult{FloatValue: f64}
+	DB.Create(&calcResult)
 }
