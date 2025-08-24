@@ -76,6 +76,8 @@ func calcIntWithError() {
 	for j := 0; j < 49; j++ {
 		i += k
 	}
+	calcResult := CalculationResult{IntValue: i}
+	DB.Create(&calcResult)
 	fmt.Printf("i = %d\n", i)
 	result := float64(i) / 100000000.0
 	fmt.Printf("Expected: 1.0, Actual: %.20f\n", result)
