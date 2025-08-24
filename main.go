@@ -15,8 +15,11 @@ import (
 
 type CalculationResult struct {
 	gorm.Model
-	FloatValue float64
-	IntValue   int
+	Name         string
+	FloatValue   float64
+	IntValue     int
+	BigRatValue  float64
+	DecimalValue decimal.Decimal `gorm:"type:decimal(65,30)"`
 }
 
 var DB *gorm.DB
@@ -49,6 +52,8 @@ func main() {
 	calcIntWithError()
 	calcBigRat()
 	calcDecimal()
+
+	calcResultAll()
 }
 
 func calcFloat() {
@@ -57,7 +62,7 @@ func calcFloat() {
 		f += 0.1
 	}
 	fmt.Println(f)
-	DB.Create(&CalculationResult{FloatValue: f})
+	DB.Create(&CalculationResult{Name: "calc float", FloatValue: f})
 }
 
 func calcInt() {
@@ -67,7 +72,7 @@ func calcInt() {
 		i += k
 	}
 	fmt.Println(i)
-	calcResult := CalculationResult{IntValue: i}
+	calcResult := CalculationResult{Name: "calc int", IntValue: i}
 	DB.Create(&calcResult)
 	fmt.Println(float64(calcResult.IntValue) / 10000.0)
 }
@@ -80,7 +85,7 @@ func calcIntWithError() {
 	for j := 0; j < 49; j++ {
 		i += k
 	}
-	calcResult := CalculationResult{IntValue: i}
+	calcResult := CalculationResult{Name: "calc int with error", IntValue: i}
 	DB.Create(&calcResult)
 	fmt.Printf("i = %d\n", i)
 	result := float64(i) / 100000000.0
@@ -114,7 +119,7 @@ func calcBigRat() {
 	fmt.Printf("Result as a fraction: %s\n", sum.String())
 	f64, _ := sum.Float64()
 	fmt.Printf("Result as float64: %.20f\n", f64)
-	calcResult := CalculationResult{FloatValue: f64}
+	calcResult := CalculationResult{Name: "calc math/big rat", BigRatValue: f64}
 	DB.Create(&calcResult)
 }
 
@@ -151,7 +156,16 @@ func calcDecimal() {
 	}
 
 	// DBに保存するためにfloat64に変換
-	f64, _ := sum.Float64()
-	calcResult := CalculationResult{FloatValue: f64}
+	// f64, _ := sum.Float64()
+	calcResult := CalculationResult{Name: "calc decimal", DecimalValue: sum}
 	DB.Create(&calcResult)
+}
+
+func calcResultAll() {
+	var results []CalculationResult
+	DB.Find(&results)
+	for _, r := range results {
+		fmt.Printf("ID: %d, Name: %s, FloatValue: %.20f, IntValue: %d, BigRatValue: %.20f, DecimalValue: %s\n",
+			r.ID, r.Name, r.FloatValue, r.IntValue, r.BigRatValue, r.DecimalValue.String())
+	}
 }
