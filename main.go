@@ -15,11 +15,12 @@ import (
 
 type CalculationResult struct {
 	gorm.Model
-	Name         string
-	FloatValue   float64
-	IntValue     int
-	BigRatValue  float64
-	DecimalValue decimal.Decimal `gorm:"type:decimal(65,30)"`
+	Name          string
+	FloatValue    float64
+	IntValue      int
+	IntErrorValue int
+	BigRatValue   float64
+	DecimalValue  decimal.Decimal `gorm:"type:decimal(65,30)"`
 }
 
 var DB *gorm.DB
@@ -47,52 +48,55 @@ func main() {
 	if err := db.AutoMigrate(&CalculationResult{}); err != nil {
 		panic("failed to migrate database")
 	}
-	calcFloat()
-	calcInt()
-	calcIntWithError()
-	calcBigRat()
-	calcDecimal()
+	calcResult := CalculationResult{
+		Name:          "計算結果",
+		FloatValue:    calcFloat(),
+		IntValue:      calcInt(),
+		IntErrorValue: calcIntWithError(),
+		BigRatValue:   calcBigRat(),
+		DecimalValue:  calcDecimal(),
+	}
+	DB.Create(&calcResult)
 
-	calcResultAll()
+	// calcResultAll()
 }
 
-func calcFloat() {
+func calcFloat() float64 {
 	var f float64
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		f += 0.1
 	}
 	fmt.Println(f)
-	DB.Create(&CalculationResult{Name: "calc float", FloatValue: f})
+	return f
 }
 
-func calcInt() {
+func calcInt() int {
 	var i int
 	k := int(0.1 * 10000)
-	for j := 0; j < 10; j++ {
+	for range 10 {
 		i += k
 	}
 	fmt.Println(i)
-	calcResult := CalculationResult{Name: "calc int", IntValue: i}
-	DB.Create(&calcResult)
-	fmt.Println(float64(calcResult.IntValue) / 10000.0)
+	fmt.Println(float64(i) / 10000.0)
+	return i
 }
 
-func calcIntWithError() {
+func calcIntWithError() int {
 	fmt.Println("--Error case with 1.0/49.0 --")
 	var i int
 	val := (1.0 / 49.0) * 100000000.0
 	k := int(val)
-	for j := 0; j < 49; j++ {
+	for range 49 {
 		i += k
 	}
-	calcResult := CalculationResult{Name: "calc int with error", IntValue: i}
-	DB.Create(&calcResult)
+
 	fmt.Printf("i = %d\n", i)
 	result := float64(i) / 100000000.0
 	fmt.Printf("Expected: 1.0, Actual: %.20f\n", result)
+	return i
 }
 
-func calcBigRat() {
+func calcBigRat() float64 {
 	fmt.Println("--- big.Rat case with 1/49 ---")
 	// 1/49を表現するRatを作成
 	r := big.NewRat(1, 49)
@@ -101,7 +105,7 @@ func calcBigRat() {
 	sum := big.NewRat(0, 1)
 
 	// 49回足し合わせる
-	for i := 0; i < 49; i++ {
+	for range 49 {
 		sum.Add(sum, r)
 	}
 
@@ -119,11 +123,10 @@ func calcBigRat() {
 	fmt.Printf("Result as a fraction: %s\n", sum.String())
 	f64, _ := sum.Float64()
 	fmt.Printf("Result as float64: %.20f\n", f64)
-	calcResult := CalculationResult{Name: "calc math/big rat", BigRatValue: f64}
-	DB.Create(&calcResult)
+	return f64
 }
 
-func calcDecimal() {
+func calcDecimal() decimal.Decimal {
 	fmt.Println("\n--- decimal.Decimal case with 1/49 ---")
 	// 1と49をdecimalで表現
 	one := decimal.NewFromInt(1)
@@ -137,7 +140,7 @@ func calcDecimal() {
 	sum := decimal.NewFromInt(0)
 
 	// 49回足し合わせる
-	for i := 0; i < 49; i++ {
+	for range 49 {
 		sum = sum.Add(r)
 	}
 
@@ -157,8 +160,7 @@ func calcDecimal() {
 
 	// DBに保存するためにfloat64に変換
 	// f64, _ := sum.Float64()
-	calcResult := CalculationResult{Name: "calc decimal", DecimalValue: sum}
-	DB.Create(&calcResult)
+	return sum
 }
 
 func calcResultAll() {
