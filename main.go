@@ -62,27 +62,29 @@ func main() {
 }
 
 func calcFloat() float64 {
+	fmt.Println("##### float case with 0.1 #####")
 	var f float64
 	for range 10 {
 		f += 0.1
 	}
-	fmt.Println(f)
+	fmt.Printf("Expected: 1.0, Actual: %.20f\n\n", f)
 	return f
 }
 
 func calcInt() int {
+	fmt.Println("##### int case with 0.1 * 10000 #####")
 	var i int
 	k := int(0.1 * 10000)
 	for range 10 {
 		i += k
 	}
-	fmt.Println(i)
-	fmt.Println(float64(i) / 10000.0)
+	fmt.Printf("Expected: 10000, Actual: %d\n", i)
+	fmt.Printf("Expected: 1.0, Actual: %.20f\n\n", float64(i)/10000.0)
 	return i
 }
 
 func calcIntWithError() int {
-	fmt.Println("--Error case with 1.0/49.0 --")
+	fmt.Println("##### int case with 1/49 * 100000000 #####")
 	var i int
 	val := (1.0 / 49.0) * 100000000.0
 	k := int(val)
@@ -90,14 +92,14 @@ func calcIntWithError() int {
 		i += k
 	}
 
-	fmt.Printf("i = %d\n", i)
+	fmt.Printf("1/49 * 100000000 = %.20f\n", val)
 	result := float64(i) / 100000000.0
-	fmt.Printf("Expected: 1.0, Actual: %.20f\n", result)
+	fmt.Printf("Expected: 1.0, Actual: %.20f\n\n", result)
 	return i
 }
 
 func calcBigRat() float64 {
-	fmt.Println("--- big.Rat case with 1/49 ---")
+	fmt.Println("##### big.Rat case with 1/49 #####")
 	// 1/49を表現するRatを作成
 	r := big.NewRat(1, 49)
 
@@ -122,12 +124,12 @@ func calcBigRat() float64 {
 	// 結果を文字列や浮動小数点数で表示
 	fmt.Printf("Result as a fraction: %s\n", sum.String())
 	f64, _ := sum.Float64()
-	fmt.Printf("Result as float64: %.20f\n", f64)
+	fmt.Printf("Result as float64: %.20f\n\n", f64)
 	return f64
 }
 
 func calcDecimal() decimal.Decimal {
-	fmt.Println("\n--- decimal.Decimal case with 1/49 ---")
+	fmt.Println("##### decimal case with 1/49 #####")
 	// 1と49をdecimalで表現
 	one := decimal.NewFromInt(1)
 	fortyNine := decimal.NewFromInt(49)
@@ -155,7 +157,7 @@ func calcDecimal() decimal.Decimal {
 		// 期待値との差分を表示
 		diff := sum.Sub(expectedOne).Abs()
 		fmt.Printf("Final Sum:  %s\n", sum.String())
-		fmt.Printf("Difference: %s\n", diff.String())
+		fmt.Printf("Difference: %s\n\n", diff.String())
 	}
 
 	// DBに保存するためにfloat64に変換
